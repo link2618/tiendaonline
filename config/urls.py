@@ -6,12 +6,24 @@ from django.views.generic import TemplateView
 from django.views import defaults as default_views
 
 from tienda.users.views import (
-        Indice, ListadoProducto
+        Indice,
+        ListadoProducto,
+        DetalleProducto,
+        ComentarioProducto,
+        Ingresar,
+        Salir,
+        CambiarPerfil
     )
 
 urlpatterns = [
     path('', Indice.as_view(), name='indice'),
     path('listado_productos/', ListadoProducto.as_view(), name='listado_productos'),
+    path('detalle_producto/<int:pk>/', DetalleProducto.as_view(), name='detalle_producto'),
+    path('crear_comentario/', ComentarioProducto.as_view(), name='crear_comentario'),
+    path('ingresar/', Ingresar.as_view(), name='ingresar'),
+    path('salir/', Salir.as_view(), name='salir'),
+    path('cambiar_perfil/', CambiarPerfil.as_view(), name='cambiar_perfil'),
+
     #path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     #path(
     #    "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"

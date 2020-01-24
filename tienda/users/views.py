@@ -1,11 +1,16 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse
-from django.views.generic import DetailView, RedirectView, UpdateView, TemplateView, ListView
+from django.contrib.auth.views import LogoutView, LoginView
+
+from django.urls import reverse, reverse_lazy
+from django.views.generic import DetailView, RedirectView, UpdateView, TemplateView, ListView, CreateView
+from django.http import HttpResponseRedirect
+
 from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
+
 from django.db.models import Q, Max, Min
-from tienda.productos.models import Producto
+from tienda.productos.models import Producto, Comentario
 
 User = get_user_model()
 
@@ -59,3 +64,48 @@ class ListadoProducto(ListView):
         context['maximo'] = Producto.objects.all().aggregate(Max('precio'))['precio__max']
         context['minimo'] = Producto.objects.all().aggregate(Min('precio'))['precio__min']
         return context
+
+
+class DetalleProducto(DetailView):
+    template_name = 'detalle.html'
+    model = Producto
+
+
+class ComentarioProducto(CreateView):
+    template_name = 'detalle.html'
+    model = Comentario
+    fields = ('comentario','usuario','producto',)
+
+    #confirmar si todo esta bien para dar url
+    def get_success_url(self):
+        return "/detalle_producto/{}/".format(self.object.producto.pk)
+
+
+class Salir(LogoutView):
+	next_page = reverse_lazy('indice')
+
+
+class Ingresar(LoginView):
+	template_name = 'login.html'
+
+    # Si el logueo es correcto redirecciona al inicio si no no
+	def get(self, request, *args, **kwargs):
+		if request.user.is_authenticated:
+			return HttpResponseRedirect(reverse('indice'))
+		else:
+			context = self.get_context_data(**kwargs)
+			return self.render_to_response(context)
+
+	def get_success_url(self):
+		return reverse('indice')
+
+
+class CambiarPerfil(LoginRequiredMixin, UpdateView):
+    model = User
+    fields = ('telefono','last_name','first_name','email',)
+    success_url = '/'
+    template_name = 'perfil.html'
+
+    #obtener objeto que queremos modificar
+    def get_object(self, queryset=None):
+        return self.request.user

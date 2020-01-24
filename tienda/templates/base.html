@@ -20,8 +20,15 @@
     <div class="nav-wrapper container">
       <a id="logo-container" href="{% url 'indice' %}" class="brand-logo">Logo</a>
       <ul class="right hide-on-med-and-down">
+            {% if request.user.is_authenticated %}
+            <li> <a href="{% url 'salir' %}">Salir</a> </li>
+            {% else %}
+            <li> <a href="{% url 'ingresar' %}">Ingresar</a> </li>
+            {% endif %}
             <li><a href="{% url 'listado_productos' %}">Productos</a></li>
-            <li><a href="#">Mi perfil</a></li>
+            {% if request.user.is_authenticated %}
+            <li><a href="{% url 'cambiar_perfil' %}">Mi perfil</a></li>
+            {% endif %}
             <li><a href="#">Mis compras</a></li>
       </ul>
 
@@ -31,8 +38,13 @@
                 Logo
             </a>
         </li>
+        {% if request.user.is_authenticated %}
+        <li> <a href="{% url 'salir' %}">Salir</a> </li>
+        {% else %}
+        <li> <a href="{% url 'ingresar' %}">Ingresar</a> </li>
+        {% endif %}
         <li><a href="{% url 'listado_productos' %}">Productos</a></li>
-        <li><a href="#">Mi perfil</a></li>
+        <li><a href="{% url 'cambiar_perfil' %}">Mi perfil</a></li>
         <li><a href="#">Mis compras</a></li>
       </ul>
       <a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
@@ -45,6 +57,15 @@
 
 {% endblock contenido %}
 
+{% if request.user.is_authenticated %}
+    <div class="fixed-action-btn">
+      <a class="btn-floating btn-large red pulse">
+        <i class="large material-icons">shopping_cart</i>
+      </a>
+      <ul>
+      </ul>
+    </div>
+{% endif %}
 
 <!-- Pie de pagina -->
   <footer class="page-footer teal">
