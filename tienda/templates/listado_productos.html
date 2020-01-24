@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>
+    
+    tienda
+
+  </title>
+
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="css/tienda.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="css/nouislider.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+
+</head>
+<body>
+  <nav class="white" role="navigation">
+    <div class="nav-wrapper container">
+      <a id="logo-container" href="#" class="brand-logo">Logo</a>
+      <ul class="right hide-on-med-and-down">
+            <li><a href="#">Productos</a></li>
+            <li><a href="#">Mi perfil</a></li>
+            <li><a href="#">Mis compras</a></li>
+      </ul>
+
+      <ul id="nav-mobile" class="sidenav">
+        <li>
+            <a href="">
+                Logo
+            </a>
+        </li>
+        <li><a href="#">Productos</a></li>
+        <li><a href="#">Mi perfil</a></li>
+        <li><a href="#">Mis compras</a></li>
+      </ul>
+      <a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+
+    </div>
+  </nav>
+
+  <div class="container">
+    <br>
+    <center>
+      <h1>
+        Productos
+      </h1>
+    </center>
+
+    <div class="row">
+      <form action="" class="col s12">
+
+          <div class="input-field col s6">
+            <i class="material-icons prefix">search</i>
+            <input id="buscar" type="text" class="validate">
+            <label for="buscar">Nombre del producto</label>
+          </div>
+
+          <div class="col s6">
+            <label for="">Precio del producto</label>
+            <br><br>
+            <div id="test-slider"></div>
+          </div>
+          <div class="col s12">
+            <center>
+              <button class="waves-effect waves-light btn-large" type="submit">
+                Buscar
+              </button>
+            </center>
+          </div>
+
+      </form>
+    </div>
+
+    <div class="row">
+
+
+      <div class="col s4">
+        <div class="card">
+          <div class="card-image">
+            <div style="width: 441px;
+            height: 305px;
+            background-image: url(imagenes/imagen.jpeg);
+            background-size: cover;
+            background-repeat: no-repeat;
+            max-width: 100%;
+            width: 100%;"></div>
+          </div>
+          <div class="card-content">
+            <p>
+              Titulo del producto
+            </p>
+          </div>
+          <div class="card-action">
+            <center>
+              <button class="waves-effect waves-light btn-large" type="submit">
+                ver
+              </button>
+            </center>
+          </div>
+        </div>
+      </div>
+        
+
+
+    </div>
+
+    <div class="row">
+      <center>
+        <ul class="pagination">
+          <li class="disabled"><a href="#!"><i class="material-icons">chevron_left</i></a></li>
+          <li class="active"><a href="#!">1</a></li>
+          <li class="waves-effect"><a href="#!">2</a></li>
+          <li class="waves-effect"><a href="#!">3</a></li>
+          <li class="waves-effect"><a href="#!">4</a></li>
+          <li class="waves-effect"><a href="#!">5</a></li>
+          <li class="waves-effect"><a href="#!"><i class="material-icons">chevron_right</i></a></li>
+        </ul>
+      </center>
+    </div>
+
+    <br>
+  </div>
+
+  <footer class="page-footer teal">
+    <div class="container">
+      <div class="row">
+
+        <div class="col l12 s12">
+          <h5 class="white-text">Somos los mejores!</h5>
+          <p class="grey-text text-lighten-4">
+              Enviamos a todo el país
+          </p>
+
+        </div>
+
+      </div>
+    </div>
+
+    <div class="footer-copyright">
+      <div class="container">
+          <center>
+                Todos los derechos reservados 2019
+          </center>
+      </div>
+    </div>
+  </footer>
+
+
+  <!--  Scripts-->
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="js/materialize.js"></script>
+  <script src="js/nouislider.min.js"></script>
+  <script src="js/wNumb.js"></script>
+  <script src="js/init.js"></script>
+  <script>
+    $(document).ready(function(){
+      var slider = document.getElementById('test-slider');
+    noUiSlider.create(slider, {
+      start: [20, 80],
+      connect: true,
+      step: 1,
+      orientation: 'horizontal', // 'horizontal' or 'vertical'
+      range: {
+        'min': 0,
+        'max': 100
+      },
+      format: wNumb({
+        decimals: 0
+      })
+    });
+    })
+  </script>
+
+  </body>
+</html>
