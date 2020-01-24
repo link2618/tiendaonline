@@ -5,7 +5,13 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 from django.views import defaults as default_views
 
+from tienda.users.views import (
+        Indice, ListadoProducto
+    )
+
 urlpatterns = [
+    path('', Indice.as_view(), name='indice'),
+    path('listado_productos/', ListadoProducto.as_view(), name='listado_productos'),
     #path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     #path(
     #    "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
