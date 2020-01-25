@@ -12,17 +12,40 @@ from tienda.users.views import (
         ComentarioProducto,
         Ingresar,
         Salir,
-        CambiarPerfil
+        CambiarPerfil,
+        AniadirCarrito,
+        ListarCarrito,
+        ListarCarritoPendientes,
+        ListarCarritoFinalizadas,
+        EliminarCarrito,
+        DetailPaymentView,
+        SummaryView,
+        updateCar
     )
 
 urlpatterns = [
     path('', Indice.as_view(), name='indice'),
-    path('listado_productos/', ListadoProducto.as_view(), name='listado_productos'),
-    path('detalle_producto/<int:pk>/', DetalleProducto.as_view(), name='detalle_producto'),
-    path('crear_comentario/', ComentarioProducto.as_view(), name='crear_comentario'),
+
+    #usuarios
     path('ingresar/', Ingresar.as_view(), name='ingresar'),
     path('salir/', Salir.as_view(), name='salir'),
     path('cambiar_perfil/', CambiarPerfil.as_view(), name='cambiar_perfil'),
+
+    #productos
+    path('listado_productos/', ListadoProducto.as_view(), name='listado_productos'),
+    path('detalle_producto/<int:pk>/', DetalleProducto.as_view(), name='detalle_producto'),
+    path('crear_comentario/', ComentarioProducto.as_view(), name='crear_comentario'),
+    path('aniadir_carrito/', AniadirCarrito.as_view(), name='aniadir_carrito'),
+    path('listar_carrito/', ListarCarrito.as_view(), name='listar_carrito'),
+    path('listar_pendientes/', ListarCarritoPendientes.as_view(), name='listar_pendientes'),
+    path('listar_finalizado/', ListarCarritoFinalizadas.as_view(), name='listar_finalizado'),
+    path('eliminar_carrito/<int:pk>/', EliminarCarrito.as_view(), name='eliminar_carrito'),
+
+    #pasarela de compras
+    path('confirmacion/', SummaryView.as_view(), name='confirmation'),
+    path('pagar/',DetailPaymentView.as_view(),name="pagar"),
+    path('cambiar-carrito/', updateCar, name="actualizar_carrito"),
+
 
     #path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     #path(

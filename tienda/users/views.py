@@ -3,14 +3,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LogoutView, LoginView
 
 from django.urls import reverse, reverse_lazy
-from django.views.generic import DetailView, RedirectView, UpdateView, TemplateView, ListView, CreateView
+from django.views.generic import DetailView, RedirectView, UpdateView, TemplateView, ListView, CreateView, DeleteView
 from django.http import HttpResponseRedirect
 
 from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 
 from django.db.models import Q, Max, Min
-from tienda.productos.models import Producto, Comentario
+from tienda.productos.models import Producto, Comentario, CarritoCompra
 
 User = get_user_model()
 
@@ -109,3 +109,168 @@ class CambiarPerfil(LoginRequiredMixin, UpdateView):
     #obtener objeto que queremos modificar
     def get_object(self, queryset=None):
         return self.request.user
+
+
+class AniadirCarrito(LoginRequiredMixin, CreateView):
+    model = CarritoCompra
+    fields = ('usuario','producto','precio',)
+    success_url = reverse_lazy('indice')
+    login_url = 'ingresar'
+
+
+class EliminarCarrito(LoginRequiredMixin,DeleteView):
+    queryset = CarritoCompra.objects.filter(comprado=False)
+    model = CarritoCompra
+    success_url = reverse_lazy('indice')
+    login_url = 'ingresar'
+
+
+class ListarCarrito(LoginRequiredMixin,ListView):
+    template_name = 'carrito.html'
+    model = CarritoCompra
+    queryset = CarritoCompra.objects.filter(comprado=False,pendiente=False)
+    login_url = 'ingresar'
+
+    def get_context_data(self, **kwargs):
+        context = super(ListarCarrito, self).get_context_data(**kwargs)
+        context['tab'] = 'sincomprar'
+        return context
+
+
+class ListarCarritoPendientes(LoginRequiredMixin,ListView):
+    template_name = 'carrito.html'
+    model = CarritoCompra
+    queryset = CarritoCompra.objects.filter(comprado=False,pendiente=True)
+    login_url = 'ingresar'
+
+    def get_context_data(self, **kwargs):
+        context = super(ListarCarritoPendientes, self).get_context_data(**kwargs)
+        context['tab'] = 'pendientes'
+        return context
+
+
+class ListarCarritoFinalizadas(LoginRequiredMixin,ListView):
+    template_name = 'carrito.html'
+    model = CarritoCompra
+    queryset = CarritoCompra.objects.filter(comprado=True,pendiente=False)
+    login_url = 'ingresar'
+
+    def get_context_data(self, **kwargs):
+        context = super(ListarCarritoFinalizadas, self).get_context_data(**kwargs)
+        context['tab'] = 'finalizadas'
+        return context
+
+
+########## pasarela de pagos #####################
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+import hashlib
+import requests
+import json
+
+
+class paymentDetail():
+    merchantId = 508029
+    accountId = 512321
+    apiKey = '4Vj8eK4rloUd272L48hsrarnUA'
+    description = "compra realizada desde mi sitio"
+    test = 1
+    url = "https://sandbox.checkout.payulatam.com/ppp-web-gateway-payu"
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SummaryView(TemplateView):
+    template_name = 'fin_detalle_compra.html'
+
+    def post(self, request, *args, **kwargs):
+        merchand_id          = request.POST['merchant_id']
+        reference_sale       = request.POST['reference_sale']
+        state_pol            = request.POST['state_pol']
+        value                = request.POST['value']
+        currency             = request.POST['currency']
+        sign                 = request.POST['sign']
+
+        value_str = str(value)
+
+        value_antes, value_despues = value_str.split(".")
+        value_despues= list(value_despues)
+        if value_despues[1] == '0':
+            value= round(float(value),1)
+        signature          = hashlib.md5('{}~{}~{}~{}~{}~{}'.format(paymentDetail().apiKey, merchand_id,reference_sale, value, currency,state_pol).encode('utf-8')).hexdigest()
+
+        if signature == request.POST["sign"]:
+            carritoModels = CarritoCompra.objects.filter(identificador=reference_sale,comprado=False)
+            if state_pol == '4':
+                for carrito in carritoModels:
+                    carrito.comprado = True
+                    carrito.pendiente = False
+                    carrito.datos_payu = "{}".format(request.POST)
+                    carrito.save()
+
+                if len(carritoModels) != 0:
+                    print("compra realizada exitosamente")
+
+            # 104 error
+            # 5 expirada
+            # 6 declinada
+            elif state_pol == '104' or state_pol == '5' or state_pol == '6':
+                carritoModels.delete()
+        else:
+            print("el signature no coincide")
+
+        return HttpResponse(status=200)
+
+
+
+class DetailPaymentView(TemplateView):
+    template_name = 'detalle_compra.html'
+
+    def get_context_data(self, **kwargs):
+        payment = paymentDetail()
+        description  = payment.description
+        merchantId  = payment.merchantId
+        accountId  = payment.accountId
+        context = super(DetailPaymentView, self).get_context_data(**kwargs)
+        referenceCode = ""
+        amount = 0
+        currency = 'COP'
+
+        context["merchant_id"] = merchantId
+        context["account_id"] = accountId
+        context["description"] = description
+        context["reference_code"] = referenceCode
+        context["amount"] = amount
+        context["tax"] = 0
+        context["taxReturn_base"] = 0
+        context["currency"] = currency
+        context["signature"] = ""
+        context["test"] = payment.test
+        context["buyer_email"] = self.request.user.email
+        context["response_url"] = 'https://26aded35.ngrok.io/pagar/'
+        context["confirmation_url"] = 'https://26aded35.ngrok.io/confirmacion/'
+        context["url"] = payment.url
+        return context
+
+
+def updateCar(request):
+    payment = paymentDetail()
+    merchantId  = payment.merchantId
+    apiKey = payment.apiKey
+
+    maximo_identificador = CarritoCompra.objects.all().order_by('-identificador')[0].identificador
+    maximo_identificador =  maximo_identificador + 1
+    currency = 'COP'
+
+    carritos = request.user.carrito_usuario.all().filter(comprado = False, pendiente = False)
+
+    amount = 0
+    for carrito in carritos:
+        carrito.pendiente = True
+        carrito.identificador = maximo_identificador
+        carrito.direccion = request.POST["direction"]
+        carrito.save()
+        amount = amount + carrito.precio
+    signature = hashlib.md5("{}~{}~{}~{}~{}".format(apiKey,merchantId,maximo_identificador,amount,currency).encode('utf-8') ).hexdigest()
+
+    response = HttpResponse(json.dumps({"precio":amount,"identifier":maximo_identificador,"signature":signature}), content_type="application/json", status=200)
+    return response
